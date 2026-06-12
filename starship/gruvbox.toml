@@ -1,0 +1,117 @@
+# Starship — Gruvbox-faithful prompt
+# 識別色：暖橘 + 沙黃 + 米黃綠（復古暖色暗主題）
+
+add_newline = false
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$character\
+"""
+
+# Gruvbox directory：黃 #fabd2f（gruvbox 最具識別度的暖黃，與編輯器 type/keyword 一致）
+[directory]
+style = "bold #fabd2f"
+
+# Gruvbox branch：aqua #8ec07c（gruvbox 招牌青苔綠，比 purple 更具識別）
+[git_branch]
+style = "bold #8ec07c"
+symbol = " "
+
+# Gruvbox git_status：橘 #fe8019（gruvbox 警示橘）
+[git_status]
+style = "bold #fe8019"
+
+[character]
+success_symbol = "[❯](bold #b8bb26)"
+error_symbol = "[❯](bold #fb4934)"
+vimcmd_symbol = "[❮](bold #b8bb26)"
+
+# 一次關掉所有多餘 runtime / cloud / language 模組
+[aws]
+disabled = true
+[azure]
+disabled = true
+[battery]
+disabled = true
+[buf]
+disabled = true
+[cmake]
+disabled = true
+[cmd_duration]
+disabled = true
+[conda]
+disabled = true
+[dart]
+disabled = true
+[deno]
+disabled = true
+[docker_context]
+disabled = true
+[dotnet]
+disabled = true
+[elixir]
+disabled = true
+[elm]
+disabled = true
+[erlang]
+disabled = true
+[fennel]
+disabled = true
+[gcloud]
+disabled = true
+[golang]
+disabled = true
+[haskell]
+disabled = true
+[hostname]
+disabled = true
+[java]
+disabled = true
+[julia]
+disabled = true
+[kotlin]
+disabled = true
+[kubernetes]
+disabled = true
+[lua]
+disabled = true
+[memory_usage]
+disabled = true
+[nodejs]
+disabled = true
+[package]
+disabled = true
+[perl]
+disabled = true
+[php]
+disabled = true
+[pulumi]
+disabled = true
+[python]
+disabled = true
+[ruby]
+disabled = true
+[rust]
+disabled = true
+[scala]
+disabled = true
+[shell]
+disabled = true
+[shlvl]
+disabled = true
+[swift]
+disabled = true
+[terraform]
+disabled = true
+[time]
+disabled = true
+[username]
+disabled = true
+[vagrant]
+disabled = true
+[vlang]
+disabled = true
+[zig]
+disabled = true
