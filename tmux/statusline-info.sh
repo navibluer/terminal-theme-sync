@@ -25,36 +25,57 @@ if (( n > 4 )); then
   short="${parts[0]}/${parts[1]}/…/${parts[n-1]}"
 fi
 
-# --- git：單次 status 呼叫取 branch + 髒污標記（+ staged / ! unstaged / ? untracked）---
-branch="" marks="" oid="" head="" staged=0 unstaged=0 untracked=0
+# --- git：單次 status 呼叫取 branch + 狀態符號（Starship 預設符號系統）---
+# 符號：= conflicted · $ stash · ✘ deleted · » renamed · ! modified · + staged · ? untracked · ⇡⇣ ahead/behind
+branch="" oid="" head="" ahead=0 behind=0 stash=0
+conflicted=0 deleted=0 renamed=0 modified=0 staged=0 untracked=0
 while IFS= read -r line; do
   case "$line" in
     "# branch.oid "*)  oid="${line#\# branch.oid }" ;;
     "# branch.head "*) head="${line#\# branch.head }" ;;
+    "# branch.ab "*)   ab="${line#\# branch.ab }"
+                       ahead="${ab%% *}"; ahead="${ahead#+}"
+                       behind="${ab##* }"; behind="${behind#-}" ;;
+    "# stash "*)       stash="${line#\# stash }" ;;
     "? "*)             untracked=1 ;;
-    [12]" "*)          [ "${line:2:1}" != "." ] && staged=1
-                       [ "${line:3:1}" != "." ] && unstaged=1 ;;
-    "u "*)             unstaged=1 ;;
+    "u "*)             conflicted=1 ;;
+    [12]" "*)          [ "${line:0:1}" = "2" ] && renamed=1
+                       x="${line:2:1}" ; y="${line:3:1}"
+                       if [ "$x" = "D" ] || [ "$y" = "D" ]; then deleted=1; fi
+                       if [ "$x" != "." ] && [ "$x" != "D" ]; then staged=1; fi
+                       if [ "$y" != "." ] && [ "$y" != "D" ]; then modified=1; fi ;;
   esac
-done < <(git -C "$path" --no-optional-locks status --porcelain=v2 --branch 2>/dev/null || true)
+done < <(git -C "$path" --no-optional-locks status --porcelain=v2 --branch --show-stash 2>/dev/null || true)
 
+marks="" dirty=0
 if [ -n "$oid" ]; then
   if [ -z "$head" ] || [ "$head" = "(detached)" ]; then
     branch="${oid:0:7}"
   else
     branch="$head"
   fi
-  [ "$staged" -eq 1 ]    && marks="${marks}+"
-  [ "$unstaged" -eq 1 ]  && marks="${marks}!"
-  [ "$untracked" -eq 1 ] && marks="${marks}?"
+  # 排列順序照 Starship 預設：conflicted stash deleted renamed modified staged untracked + ahead/behind
+  [ "$conflicted" -eq 1 ]        && marks="${marks}="
+  [ "${stash:-0}" -gt 0 ]        && marks="${marks}\$"
+  [ "$deleted" -eq 1 ]           && marks="${marks}✘"
+  [ "$renamed" -eq 1 ]           && marks="${marks}»"
+  [ "$modified" -eq 1 ]          && marks="${marks}!"
+  [ "$staged" -eq 1 ]            && marks="${marks}+"
+  [ "$untracked" -eq 1 ]         && marks="${marks}?"
+  # 髒污判定只看工作區狀態：stash / ahead / behind 不轉橘
+  if [ "$conflicted$deleted$renamed$modified$staged$untracked" != "000000" ]; then dirty=1; fi
+  [ "${ahead:-0}" -gt 0 ] 2>/dev/null  && marks="${marks}⇡"
+  [ "${behind:-0}" -gt 0 ] 2>/dev/null && marks="${marks}⇣"
 fi
 
 # --- 輸出：cwd pill（+ 可選 git pill），非 git 目錄時 git pill 整顆消失 ---
 out="#[fg=${dir_bg},bg=${bar_bg}]${CAP_L}#[bg=${dir_bg},fg=${text_fg},bold] ${short} #[nobold]"
 if [ -n "$branch" ]; then
   git_bg="$git_ok_bg"
-  [ -n "$marks" ] && git_bg="$git_dirty_bg"
-  out+="#[fg=${dir_bg},bg=${git_bg}]${SEP}#[bg=${git_bg},fg=${text_fg},bold] ⎇ ${branch}${marks} #[nobold]#[fg=${git_bg},bg=${bar_bg}]${CAP_R}"
+  [ "$dirty" -eq 1 ] && git_bg="$git_dirty_bg"
+  BRANCH_ICON=$(printf '\xee\x82\xa0')   # U+E0A0 Starship 預設 branch 圖示
+  [ -n "$marks" ] && marks=" ${marks}"
+  out+="#[fg=${dir_bg},bg=${git_bg}]${SEP}#[bg=${git_bg},fg=${text_fg},bold] ${BRANCH_ICON} ${branch}${marks} #[nobold]#[fg=${git_bg},bg=${bar_bg}]${CAP_R}"
 else
   out+="#[fg=${dir_bg},bg=${bar_bg}]${CAP_R}"
 fi

@@ -5,7 +5,9 @@
 
 tmux status line 採 [coralline](https://github.com/Nanako0129/coralline) 風格的 powerline pills：
 左側 session 徽章 + prefix 指示燈，中間視窗 pills，右側顯示 active pane 的
-**cwd + git branch（乾淨綠 / 髒橘，`+!?` = staged / unstaged / untracked）+ 時鐘**。
+**cwd + git branch + 時鐘**。git 狀態符號與 Starship 預設同一套語彙：
+`=` conflicted · `$` stash · `✘` deleted · `»` renamed · `!` modified · `+` staged ·
+`?` untracked · `⇡⇣` ahead/behind；工作區不乾淨時 pill 由綠轉橘（stash / ahead / behind 不變色）。
 
 ## 需求
 
